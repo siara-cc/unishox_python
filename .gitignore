@@ -3,3 +3,6 @@
 *.usx
 *.dsx
 test*.js.dsx
+*.pyc
+build/*
+

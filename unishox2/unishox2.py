@@ -28,9 +28,9 @@ class Unishox2:
   USX_DICT = 3
   USX_DELTA = 4
 
-  usx_sets = [b"\0 etaoinsrlcdhupmbgwfyvkqjxz",
-              b"\"{}_<>:\n\0[]\\;'\t@*&?!^|\r~`\0\0\0",
-              b"\0,.01925-/34678() =+$%#\0\0\0\0\0"]
+  usx_sets = [bytearray(b"\0 etaoinsrlcdhupmbgwfyvkqjxz"),
+              bytearray(b"\"{}_<>:\n\0[]\\;'\t@*&?!^|\r~`\0\0\0"),
+              bytearray(b"\0,.01925-/34678() =+$%#\0\0\0\0\0")]
 
   # Stores position of letter in usx_sets.
   # First 3 bits - position in usx_hcodes
@@ -136,14 +136,14 @@ class Unishox2:
   count_codes = bytearray([0x01, 0x82, 0xC3, 0xE4, 0xF4])
   def encodeCount(self, out, ol, count):
     for i in range(5):
-      if count < count_adder[i]:
-        ol = self.append_bits(out, ol, (count_codes[i] & 0xF8), count_codes[i] & 0x07)
-        count16 = (count - (count_adder[i - 1] if i > 0 else 0)) << (16 - count_bit_lens[i])
-        if (count_bit_lens[i] > 8):
+      if count < self.count_adder[i]:
+        ol = self.append_bits(out, ol, (self.count_codes[i] & 0xF8), self.count_codes[i] & 0x07)
+        count16 = (count - (self.count_adder[i - 1] if i > 0 else 0)) << (16 - self.count_bit_lens[i])
+        if (self.count_bit_lens[i] > 8):
           ol = self.append_bits(out, ol, count16 >> 8, 8)
-          ol = self.append_bits(out, ol, count16 & 0xFF, count_bit_lens[i] - 8)
+          ol = self.append_bits(out, ol, count16 & 0xFF, self.count_bit_lens[i] - 8)
         else:
-          ol = self.append_bits(out, ol, count16 >> 8, count_bit_lens[i])
+          ol = self.append_bits(out, ol, count16 >> 8, self.count_bit_lens[i])
         return ol
     return ol
 
@@ -167,14 +167,14 @@ class Unishox2:
         ol = self.append_bits(out, ol, (codes[i] & 0xF8), codes[i] & 0x07)
         #if (diff):
         ol = self.append_bits(out, ol, 0x80 if prev_code > code else 0, 1)
-        val = diff - uni_adder[i]
+        val = diff - self.uni_adder[i]
         #printf("Val: %d\n", val)
         if self.uni_bit_len[i] > 16:
           val <<= (24 - self.uni_bit_len[i])
           ol = self.append_bits(out, ol, val >> 16, 8)
           ol = self.append_bits(out, ol, (val >> 8) & 0xFF, 8)
           ol = self.append_bits(out, ol, val & 0xFF, self.uni_bit_len[i] - 16)
-        elif uni_bit_len[i] > 8:
+        elif self.uni_bit_len[i] > 8:
           val <<= (16 - self.uni_bit_len[i])
           ol = self.append_bits(out, ol, val >> 8, 8)
           ol = self.append_bits(out, ol, val & 0xFF, self.uni_bit_len[i] - 8)
@@ -189,7 +189,7 @@ class Unishox2:
     ret = 0
     if isinstance(input, str):
       ret = ord(input[l])
-      return ret, 1 if ret == ord(input[l]) else 2
+      return ret, 1
     utf8len = 0
     if l < (ilen - 1) and (input[l] & 0xE0) == 0xC0 and (input[l + 1] & 0xC0) == 0x80:
       utf8len = 2
@@ -446,6 +446,7 @@ class Unishox2:
             c_uid = ord(input[l]) if is_str else input[l]
             ol = self.append_bits(out, ol, self.getBaseCode(c_uid), 4)
             l = l + 1
+            hex_len -= 1
           l = l - 1
           continue
 
@@ -486,21 +487,21 @@ class Unishox2:
               l += j
               l -= 1
               break
-        if (i < 5):
+        if (i < 4):
           continue
 
-      if (usx_freq_seq != null):
+      if (usx_freq_seq != None):
         i = 0
         for i in range(6):
           seq_len = len(usx_freq_seq[i])
           if (ilen - seq_len > 0 and l < ilen - seq_len):
-            if (usx_hcode_lens[usx_freq_codes[i] >> 5] and \
+            if (usx_hcode_lens[self.usx_freq_codes[i] >> 5] and \
                 self.compare_arr(usx_freq_seq[i][0:seq_len], input[l:l + seq_len], is_str)):
-              (ol, state) = self.append_code(out, ol, usx_freq_codes[i], state, usx_hcodes, usx_hcode_lens)
+              (ol, state) = self.append_code(out, ol, self.usx_freq_codes[i], state, usx_hcodes, usx_hcode_lens)
               l += seq_len
               l -= 1
               break
-        if (i < 6):
+        if (i < 5):
           continue
       c_in = ord(input[l]) if is_str else input[l]
 
@@ -558,7 +559,7 @@ class Unishox2:
             ol = self.append_bits(out, ol, self.usx_vcodes[1], self.usx_vcode_lens[1])
         else:
           c_in = c_in - 1
-          (ol, state) = self.append_code(out, ol, usx_code_94[c_in], state, usx_hcodes, usx_hcode_lens)
+          (ol, state) = self.append_code(out, ol, self.usx_code_94[c_in], state, usx_hcodes, usx_hcode_lens)
       elif (c_in == 13 and c_next == 10):
         (ol, state) = self.append_code(out, ol, CRLF_CODE, state, usx_hcodes, usx_hcode_lens)
         l = l + 1
@@ -733,7 +734,7 @@ class Unishox2:
     if (idx >= 0):
       sign = self.readBit(input, bit_no) if bit_no < ilen else 0
       bit_no += 1
-      if (bit_no + uni_bit_len[idx] - 1 >= ilen):
+      if (bit_no + self.uni_bit_len[idx] - 1 >= ilen):
         return 0x7FFFFF00 + 99, bit_no
       count = self.getNumFromBits(input, ilen, bit_no, self.uni_bit_len[idx])
       count += self.uni_adder[idx]
@@ -761,14 +762,14 @@ class Unishox2:
     if (ctx == 0):
       line = out if out_arr == None else out_arr
     else:
-      if (out_arr == null):
+      if (out_arr == None):
         line = self.unishox2_decompress(prev_lines_arr, prev_lines_idx - ctx, None,
                 usx_hcodes, usx_hcode_lens, usx_freq_seq, usx_templates)
       else:
         line = bytearray((dist + dict_len) * 2)
         self.unishox2_decompress(prev_lines_arr, prev_lines_idx - ctx, line,
           usx_hcodes, usx_hcode_lens, usx_freq_seq, usx_templates)
-    if (out_arr == null):
+    if (out_arr == Nong):
       out += line[dist:dict_len]
     else:
       for i in range(dict_len):
@@ -781,14 +782,14 @@ class Unishox2:
     (dict_len, bit_no) = self.readCount(input, bit_no, ilen)
     if (dict_len < 0):
       return bit_no, out
-    dict_len += NICE_LEN
+    dict_len += self.NICE_LEN
     dist = 0
     (dist, bit_no) = self.readCount(input, bit_no, ilen)
-    dist += (NICE_LEN - 1)
+    dist += (self.NICE_LEN - 1)
     if (dist < 0):
       return bit_no, out
     #console.log("Decode ilen: %d, dist: %d\n", dict_len - NICE_LEN, dist - NICE_LEN + 1)
-    if (out_arr == null):
+    if (out_arr == None):
       out += out[len(out) - dist : dict_len]
     else:
       for i in range(dict_len):
@@ -836,7 +837,7 @@ class Unishox2:
     return out
 
   def appendString(self, out_arr, out, string):
-    if (out_arr == null):
+    if (out_arr == None):
       out += str
     else:
       for i in range(len(string)):
@@ -906,7 +907,7 @@ class Unishox2:
         else:
           prev_uni += delta
           if (prev_uni > 0):
-            if (out_arr == null):
+            if (out_arr == None):
               out += chr(prev_uni)
             else:
               out = self.writeUTF8(out_arr, out, prev_uni)
@@ -951,7 +952,7 @@ class Unishox2:
               dstate = self.USX_ALPHA
               continue
         elif (h == self.USX_DICT):
-          if (prev_lines_arr == null):
+          if (prev_lines_arr == None):
             (bit_no, out) = self.decodeRepeat(input, ilen, out_arr, out, bit_no)
           else:
             (bit_no, out) = self.decodeRepeatArray(input, ilen, out_arr, out, bit_no, \
@@ -1055,5 +1056,5 @@ class Unishox2:
     return out
 
   def unishox2_decompress_simple(self, input, ilen):
-    return self.unishox2_decompress(input, ilen, null, self.USX_HCODES_DFLT, \
+    return self.unishox2_decompress(input, ilen, None, self.USX_HCODES_DFLT, \
             self.USX_HCODE_LENS_DFLT, self.USX_FREQ_SEQ_DFLT, self.USX_TEMPLATES)

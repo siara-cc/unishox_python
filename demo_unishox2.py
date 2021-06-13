@@ -1,7 +1,7 @@
 UNISHOX_VERSION = "2.0"
 
-USX_HCODES_DFLT = bytearray([0x00, 0x40, 0x80, 0xC0, 0xE0])
-USX_HCODE_LENS_DFLT = bytearray([2, 2, 2, 3, 3])
+USX_HCODES_DFLT = bytearray([0x00, 0x40, 0xE0, 0x80, 0xC0])
+USX_HCODE_LENS_DFLT = bytearray([2, 2, 3, 2, 3])
 
 USX_HCODES_ALPHA_ONLY = bytearray([0x00, 0x00, 0x00, 0x00, 0x00])
 USX_HCODE_LENS_ALPHA_ONLY = bytearray([0, 0, 0, 0, 0])
@@ -88,12 +88,12 @@ if __name__ == "__main__":
     ctot = 0
     try:
       fp = open(args[2], "rb")
-    except Error as e:
+    except Exception as e:
       print(e)
       exit
     try:
       wfp = open(args[3], "wb+")
-    except Error as e:
+    except Exception as e:
       print(e)
       exit
     bytes_read = 1
@@ -120,12 +120,12 @@ if __name__ == "__main__":
       preset = int(args[4], 10)
     try:
       fp = open(args[2], "r")
-    except Error as e:
+    except Exception as e:
       print(e)
       exit
     try:
       wfp = open(args[3], "w+")
-    except Error as e:
+    except Exception as e:
       print(e)
       exit
     bytes_read = 1
@@ -152,12 +152,12 @@ if __name__ == "__main__":
       preset = 9; # = USX_PSET_NO_DICT;
       try:
         fp = open(args[2], "rb")
-      except Error as e:
+      except Exception as e:
         print(e)
         exit
       try:
         wfp = open(args[3] + ".js", "wb+")
-      except Error as e:
+      except Exception as e:
         print(e)
         exit
       tot_len = 0
@@ -202,7 +202,7 @@ if __name__ == "__main__":
               if (len > max_len):
                 max_len = len
               prev_lines_compressed.append(dbuf[0:clen])
-              print(unishox2_decompress_preset(prev_lines_compressed, line_ctr, null, preset))
+              print(unishox2_decompress_preset(prev_lines_compressed, line_ctr, None, preset))
           line_ctr += 1
       wfp.write("];\n")
       perc = (tot_len-ctot)
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     if (argv > 2):
       pset = int(args[2])
     buf_len = usx.unishox2_compress(args[1], args[1].length, dbuf, USX_PSETS[pset][0], USX_PSETS[pset][1], USX_PSETS[pset][2], USX_TEMPLATES)
-    out_str = usx.unishox2_decompress(dbuf, buf_len, null, USX_PSETS[pset][0], USX_PSETS[pset][1], USX_PSETS[pset][2], USX_TEMPLATES)
+    out_str = usx.unishox2_decompress(dbuf, buf_len, None, USX_PSETS[pset][0], USX_PSETS[pset][1], USX_PSETS[pset][2], USX_TEMPLATES)
     input_len = len(args[1])
     print("")
     print("Input: " + args[1])
@@ -247,7 +247,7 @@ if __name__ == "__main__":
     print("")
     print("Decompressed: " + out_str)
     print("")
-    print("Compression ratio:(" + buf_len + "/" + input_len + " = " + (Math.round((input_len-buf_len)*1000/input_len) / 10) + "% savings)")
+    print("Compression ratio:(" + buf_len + "/" + input_len + " = " + (round((input_len-buf_len)*1000/input_len) / 10) + "% savings)")
     print("")
   else:
     print("Unishox (byte format version: {})".format(UNISHOX_VERSION))
