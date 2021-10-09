@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 from unishox2 import *
 import unittest
 
