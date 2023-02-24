@@ -1,5 +1,7 @@
 # Unishox Python Library - Guaranteed Compression for Short Strings
 
+NOTE: This repo is still under development and not available for use yet.
+
 This library was developed to individually compress and decompress small strings. In general compression utilities such as `zip`, `gzip` do not compress short strings well and often expand them. They also use lots of memory which makes them unusable in constrained environments like Arduino.
 
 Note: The present byte-code version is 2 and it replaces Unishox 1.  Unishox 1 is still available [here](https://github.com/siara-cc/Unishox) only as a C Library.
